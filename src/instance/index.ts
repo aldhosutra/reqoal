@@ -1,5 +1,6 @@
 import stringify from 'json-stable-stringify';
 import { DEFAULT_PRUNE_INTERVAL_MS, DEFAULT_TTL_MS, DEFAULT_CONCURRENCY_LIMIT } from './default';
+import { hash } from './hash';
 
 type CacheEntry<T> = {
 	/** The cached result value. */
@@ -76,7 +77,7 @@ export class ReqoalInstance {
 		const functionName = fn.name || 'anonymous';
 		const key = this._createKey(functionName, ...args);
 
-		if (!this._interval) this._interval = setInterval(this.prune, this._pruneIntervalMs);
+		if (!this._interval) this._interval = setInterval(this.prune.bind(this), this._pruneIntervalMs);
 
 		const now = Date.now();
 
@@ -215,6 +216,6 @@ export class ReqoalInstance {
 		if (this._customKeyGen) {
 			return this._customKeyGen(functionName, ...args);
 		}
-		return `${functionName}|${stringify(args)}`;
+		return `${functionName}|${hash(stringify(args))}`;
 	}
 }
